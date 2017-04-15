@@ -14,7 +14,7 @@ public class PostgreConnectionManager extends ConnectionManager {
         try {
             Class.forName("org.postgresql.Driver");
             this.connection = DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/KTVI", "postgres", "postgres");
+                    "jdbc:postgresql://localhost:5432/KTV", "postgres", "postgres");
         } catch (ClassNotFoundException | SQLException ex) {
             ex.printStackTrace();
             throw new ApplicationException("appErrors.connectionFailed", ex);
