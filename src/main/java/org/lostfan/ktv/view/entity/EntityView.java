@@ -151,6 +151,9 @@ public class EntityView extends FormView {
             case Double:
                 formField = new BigDecimalFormField(entityField.getTitleKey());
                 break;
+            case BigDecimal:
+                formField = new BigDecimalFormField(entityField.getTitleKey());
+                break;
             case Boolean:
                 formField = new BooleanFormField(entityField.getTitleKey());
                 break;

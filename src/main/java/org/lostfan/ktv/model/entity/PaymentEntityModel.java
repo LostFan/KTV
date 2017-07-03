@@ -46,7 +46,7 @@ public class PaymentEntityModel extends BaseDocumentModel<Payment> {
         this.fields.add(new EntityField("subscriber", EntityFieldTypes.Subscriber, Payment::getSubscriberAccount, Payment::setSubscriberAccount));
         this.fields.add(new EntityField("service", EntityFieldTypes.Service, Payment::getServicePaymentId, Payment::setServicePaymentId));
         this.fields.add(new EntityField("renderedService", EntityFieldTypes.RenderedService, Payment::getRenderedServicePaymentId, Payment::setRenderedServicePaymentId));
-        this.fields.add(new EntityField("payment.price", EntityFieldTypes.Double, Payment::getPrice, Payment::setPrice));
+        this.fields.add(new EntityField("payment.price", EntityFieldTypes.BigDecimal, Payment::getPrice, Payment::setPrice));
         this.fields.add(new EntityField("payment.bankFileName", EntityFieldTypes.String, Payment::getBankFileName, Payment::setBankFileName));
         this.fields.add(new EntityField("paymentType", EntityFieldTypes.PaymentType, Payment::getPaymentTypeId, Payment::setPaymentTypeId));
 

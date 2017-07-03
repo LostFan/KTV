@@ -58,7 +58,7 @@ public class MainView extends FrameView {
     private ViewActionListener menuFileActionListener;
 
     public MainView(MainModel model) {
-        super("KTV");
+        super(getGuiString("application.name"));
         getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menuBar = new JMenuBar();
@@ -119,7 +119,7 @@ public class MainView extends FrameView {
         }
 
         model.addObserver(args -> {
-            setTitle("KTV - " + getEntityString(model.getCurrentModel().getEntityNameKey()));
+            setTitle(getGuiString("application.name") + " - " + getEntityString(model.getCurrentModel().getEntityNameKey()));
         });
 
         buildLayout();

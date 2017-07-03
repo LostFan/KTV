@@ -35,7 +35,7 @@ public class ReportToBankModel extends BaseObservable implements BaseModel {
 
     private static String CURRENCY_CODE = "933";
 
-    private static String CODE = "3012300048018";
+    private static String BANK_CODE = "BY81PJCB30123000481000000933";
 
     private SubscriberDAO subscriberDAO = DAOFactory.getDefaultDAOFactory().getSubscriberDAO();
     private StreetDAO streetDAO = DAOFactory.getDefaultDAOFactory().getStreetDAO();
@@ -72,7 +72,7 @@ public class ReportToBankModel extends BaseObservable implements BaseModel {
             PAYER_NUMBER = prop.getProperty("bank_report.payer_number");
             NUMBER_OF_MESSAGE = prop.getProperty("bank_report.number_of_message");
             CURRENCY_CODE = prop.getProperty("bank_report.currency_code");
-
+            BANK_CODE = prop.getProperty("bank_report.bank_code");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -117,7 +117,7 @@ public class ReportToBankModel extends BaseObservable implements BaseModel {
                 .append(SEPARATOR)
                 .append(AGENT_CODE)
                 .append(SEPARATOR)
-                .append(CODE)
+                .append(BANK_CODE)
                 .append(SEPARATOR)
                 .append("1")
                 .append(SEPARATOR)

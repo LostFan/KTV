@@ -53,7 +53,7 @@ public class RenderedServiceEntityModel extends BaseDocumentModel<RenderedServic
         this.fields.add(new EntityField("renderedService", EntityFieldTypes.Service, RenderedService::getServiceId, RenderedService::setServiceId, false));
         this.fields.add(new EntityField("renderedService.date", EntityFieldTypes.Date, RenderedService::getDate, RenderedService::setDate));
         this.fields.add(new EntityField("subscriber", EntityFieldTypes.Subscriber, RenderedService::getSubscriberAccount, RenderedService::setSubscriberAccount));
-        this.fields.add(new EntityField("renderedService.price", EntityFieldTypes.Double, RenderedService::getPrice, RenderedService::setPrice));
+        this.fields.add(new EntityField("renderedService.price", EntityFieldTypes.BigDecimal, RenderedService::getPrice, RenderedService::setPrice));
 
         this.serviceEntityField = new EntityField("service", EntityFieldTypes.Service, RenderedService::getServiceId, RenderedService::setServiceId, false);
         this.tariffField = new EntityField("tariff", EntityFieldTypes.Tariff, TariffField::getTariffId, TariffField::setTariffId);
