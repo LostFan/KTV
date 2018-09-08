@@ -114,6 +114,13 @@ public class MainController {
                     ChannelsReportModel channelsReportModel = new ChannelsReportModel();
                     ChannelsReportView channelsReportView = new ChannelsReportView(channelsReportModel);
                     break;
+                case SERVICE_SHEET:
+                    ServiceReportModel serviceReportModel= new ServiceReportModel();
+                    new ServiceReportView(serviceReportModel);
+                    break;
+                case DISCONNECTED_SUBSCRIBERS_SHEET:
+                    DisconnectedSubscribersReportModel disconnectedSubscribersReportModel = new DisconnectedSubscribersReportModel();
+                    new DisconnectedSubscribersReportView(disconnectedSubscribersReportModel);
             };
         });
         this.view.setMenuFileActionListener(args -> {

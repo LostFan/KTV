@@ -228,6 +228,26 @@ public class PostGreRenderedServiceDAO extends PostgreBaseDao implements Rendere
         return subscribersPricesInMonth;
     }
 
+    @Override
+    public Map<Integer, RenderedService> getAllRenderedServicesBetweenDates(int serviceId, LocalDate beginDate, LocalDate endDate) {
+        Map<Integer, RenderedService> subscribersRenderedServices = new HashMap<>();
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT *  FROM \"rendered_service\" where \"service_id\" = ? AND \"date\" >= ? AND \"date\" <= ? ");
+            preparedStatement.setInt(1, serviceId);
+            preparedStatement.setDate(2, Date.valueOf(beginDate));
+            preparedStatement.setDate(3, Date.valueOf(endDate));
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                subscribersRenderedServices.put(rs.getInt("subscriber_account"), constructEntity(rs));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DAOException();
+        }
+
+        return subscribersRenderedServices;
+    }
+
     public Map<Integer, BigDecimal> getAllRenderedServicesPriceForSubscriberByServiceIdBeforeDate(int serviceId, LocalDate date) {
         Map<Integer, BigDecimal> subscribersPricesInMonth = new HashMap<>();
         try {

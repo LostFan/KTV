@@ -33,6 +33,8 @@ public interface SubscriberDAO extends EntityDAO<Subscriber> {
 
     SubscriberSession getNotClosedSubscriberSession(Integer subscriberAccount, LocalDate connectionDate);
 
+    SubscriberSession getClosedSubscriberSession(Integer subscriberAccount, LocalDate date);
+
     SubscriberSession getSubscriberSessionAtDate(Integer subscriberId, LocalDate localDate);
 
     void updateSubscriberSession(SubscriberSession subscriberSession);
@@ -94,4 +96,6 @@ public interface SubscriberDAO extends EntityDAO<Subscriber> {
     Map<Integer, Integer> getSubscribersWithCurrentTariffsByDate(LocalDate date);
 
     List<Integer> getConnectedSubscribers();
+
+    List<Integer> getConnectedSubscribers(LocalDate date);
 }

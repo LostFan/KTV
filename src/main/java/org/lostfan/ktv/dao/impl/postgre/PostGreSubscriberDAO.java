@@ -410,6 +410,33 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
     }
 
     @Override
+    public SubscriberSession getClosedSubscriberSession(Integer subscriberAccount, LocalDate date) {
+        SubscriberSession subscriberSession = null;
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM  \"subscriber_session\"  WHERE \"subscriber_account\"=? AND \"connection_date\"<=? AND \"disconnection_date\" <=?  ORDER BY \"connection_date\" desc LIMIT 1");
+            preparedStatement.setInt(1, subscriberAccount);
+            preparedStatement.setDate(2, Date.valueOf(date));
+            preparedStatement.setDate(3, Date.valueOf(date));
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while (rs.next()) {
+                subscriberSession = new SubscriberSession();
+                subscriberSession.setSubscriberAccount(rs.getInt("subscriber_account"));
+                subscriberSession.setConnectionDate(rs.getDate("connection_date").toLocalDate());
+                if(rs.getDate("disconnection_date") != null) {
+                    subscriberSession.setDisconnectionDate(rs.getDate("disconnection_date").toLocalDate());
+                }
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DAOException();
+        }
+
+        return subscriberSession;
+    }
+
+    @Override
     public SubscriberSession getSubscriberSessionAtDate(Integer subscriberId, LocalDate localDate) {
         SubscriberSession subscriberSession = null;
         try {
@@ -1133,6 +1160,23 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
         return list;
     }
 
+    public List<Integer> getConnectedSubscribers(LocalDate date) {
+        List<Integer> list = new ArrayList<>();
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM  \"subscriber_session\"  WHERE \"connection_date\"<=? AND \"disconnection_date\" IS NULL");
+            preparedStatement.setDate(1,  Date.valueOf(date));
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("subscriber_account"));
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DAOException();
+        }
+
+        return list;
+    }
     private Subscriber constructEntity(ResultSet rs) throws SQLException{
         Subscriber subscriber = new Subscriber();
         subscriber.setAccount(rs.getInt("account"));
