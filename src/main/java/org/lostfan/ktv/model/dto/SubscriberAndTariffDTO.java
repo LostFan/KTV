@@ -5,6 +5,7 @@ import org.lostfan.ktv.domain.Subscriber;
 import org.lostfan.ktv.domain.Tariff;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class SubscriberAndTariffDTO {
 
@@ -17,6 +18,8 @@ public class SubscriberAndTariffDTO {
     private Subscriber subscriber;
 
     private Street subscriberStreet;
+
+    private LocalDate date;
 
     public SubscriberAndTariffDTO() {
     }
@@ -59,5 +62,13 @@ public class SubscriberAndTariffDTO {
 
     public void setTariff(Tariff tariff) {
         this.tariff = tariff;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 }

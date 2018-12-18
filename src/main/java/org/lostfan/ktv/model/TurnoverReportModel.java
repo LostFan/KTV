@@ -69,9 +69,7 @@ public class TurnoverReportModel extends BaseObservable implements BaseModel {
                     TurnoverSheetTableDTO turnoverSheetTableDTO = new TurnoverSheetTableDTO();
                     turnoverSheetTableDTO.setSubscriberAccount(k);
                     turnoverSheetTableDTO.setServiceId(serviceId);
-                    if(v.compareTo(BigDecimal.ZERO) > 0) {
-                        turnoverSheetTableDTO.setBroughtForwardBalanceDebit(v);
-                    }
+                    turnoverSheetTableDTO.setBroughtForwardBalanceDebit(v);
                     tableDTOHashMap.put(k, turnoverSheetTableDTO);
                 }
         );

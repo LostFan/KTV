@@ -8,6 +8,7 @@ import jxl.write.*;
 import org.lostfan.ktv.domain.Service;
 import org.lostfan.ktv.domain.Subscriber;
 import org.lostfan.ktv.model.dto.ServiceReportSheetTableDTO;
+import org.lostfan.ktv.model.dto.SubscriberAndTariffDTO;
 import org.lostfan.ktv.utils.ResourceBundles;
 import org.lostfan.ktv.utils.SubscriberByAddressComparator;
 
@@ -20,17 +21,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DisconnectSubscribersReportExcel implements ExcelGenerator {
+public class ConnectedDisconnectSubscribersReportExcel implements ExcelGenerator {
 
-    private List<ServiceReportSheetTableDTO> serviceReportSheetTableDTOs;
+    private List<SubscriberAndTariffDTO> serviceReportSheetTableDTOs;
 
     private LocalDate date;
+    private boolean isConnected;
 
-    public List<ServiceReportSheetTableDTO> getServiceReportSheetTableDTOs() {
+    public List<SubscriberAndTariffDTO> getServiceReportSheetTableDTOs() {
         return serviceReportSheetTableDTOs;
     }
 
-    public void setServiceReportSheetTableDTOs(List<ServiceReportSheetTableDTO> serviceReportSheetTableDTOs) {
+    public void setServiceReportSheetTableDTOs(List<SubscriberAndTariffDTO> serviceReportSheetTableDTOs) {
         this.serviceReportSheetTableDTOs = serviceReportSheetTableDTOs;
     }
 
@@ -40,6 +42,14 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public boolean isConnected() {
+        return isConnected;
+    }
+
+    public void setIsConnected(boolean isConnected) {
+        this.isConnected = isConnected;
     }
 
     @Override
@@ -53,12 +63,14 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
             Integer SUBSCRIBER_ID_COLUMN = i++;
             Integer SUBSCRIBER_ADDRESS_COLUMN = i++;
             Integer SUBSCRIBER_NAME_COLUMN = i++;
-            Integer DATE = i++;
+            Integer SUBSCRIBER_TARIFF_COLUMN = isConnected ? i++ : 0;
+            Integer DATE = !isConnected ? i++ : 0;
 
             //Creating WorkBook
             String fileName =
-                String.format("%d.%d.%d.xls",
-                    date.getDayOfMonth(), date.getMonthValue(), date.getYear());
+                String.format("%s %d.%d.%d.xls",
+                        ResourceBundles.getEntityBundle().getString(isConnected ? "connected" : "disconnected"),
+                        date.getDayOfMonth(), date.getMonthValue(), date.getYear());
             File file = new File(fileName);
             workbook = Workbook.createWorkbook(file);
             //Creating sheet
@@ -66,7 +78,11 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
             sheet.setColumnView(SUBSCRIBER_ID_COLUMN, 6);
             sheet.setColumnView(SUBSCRIBER_ADDRESS_COLUMN, 25);
             sheet.setColumnView(SUBSCRIBER_NAME_COLUMN, 20);
-            sheet.setColumnView(DATE, 20);
+            if(isConnected) {
+                sheet.setColumnView(SUBSCRIBER_TARIFF_COLUMN, 25);
+            } else {
+                sheet.setColumnView(DATE, 20);
+            }
             WritableCellFormat cellFormat = new WritableCellFormat();
             cellFormat.setAlignment(Alignment.CENTRE);
             i = 0;
@@ -78,8 +94,13 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
                     "address"), cellFormat));
             sheet.addCell(new Label(SUBSCRIBER_NAME_COLUMN, i, ResourceBundles.getEntityBundle().getString(
                     "subscriber.name"), cellFormat));
-            sheet.addCell(new Label(DATE, i, getGuiString(
-                    "date"), cellFormat));
+            if(isConnected) {
+                sheet.addCell(new Label(SUBSCRIBER_TARIFF_COLUMN, i, getGuiString(
+                        "tariff"), cellFormat));
+            } else {
+                sheet.addCell(new Label(DATE, i, getGuiString(
+                        "date"), cellFormat));
+            }
             i++;
 
             SubscriberByAddressComparator comparator = new SubscriberByAddressComparator();
@@ -87,15 +108,23 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
                     .sorted((o1, o2) -> comparator.compare(o1.getSubscriber(), o2.getSubscriber()))
                     .collect(Collectors.toList());
 
-            for (ServiceReportSheetTableDTO serviceReportSheetTableDTO : serviceReportSheetTableDTOs) {
+            for (SubscriberAndTariffDTO serviceReportSheetTableDTO : serviceReportSheetTableDTOs) {
                 sheet.addCell(new Number(SUBSCRIBER_ID_COLUMN, i, serviceReportSheetTableDTO.getSubscriberAccount()));
                 sheet.addCell(new Label(SUBSCRIBER_ADDRESS_COLUMN, i, getFullSubscriberAddress(serviceReportSheetTableDTO)));
                 sheet.addCell(new Label(SUBSCRIBER_NAME_COLUMN, i, getAbbreviatedName(serviceReportSheetTableDTO)));
-                sheet.addCell(new Label(DATE, i,
-                        serviceReportSheetTableDTO.getDate() != null ?
-                                serviceReportSheetTableDTO.getDate().toString()
-                                : ""
-                ));
+                if(isConnected) {
+                    sheet.addCell(new Label(SUBSCRIBER_TARIFF_COLUMN, i,
+                            serviceReportSheetTableDTO.getTariff().getName() != null ?
+                                    serviceReportSheetTableDTO.getTariff().getName()
+                                    : ""
+                    ));
+                } else {
+                    sheet.addCell(new Label(DATE, i,
+                            serviceReportSheetTableDTO.getDate() != null ?
+                                    serviceReportSheetTableDTO.getDate().toString()
+                                    : ""
+                    ));
+                }
                 i++;
             }
 
@@ -123,7 +152,7 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
         return message;
     }
 
-    private String getFullSubscriberAddress(ServiceReportSheetTableDTO dto) {
+    private String getFullSubscriberAddress(SubscriberAndTariffDTO dto) {
         Subscriber subscriber = dto.getSubscriber();
         if (subscriber == null || dto.getSubscriberStreet() == null) {
             return "";
@@ -143,7 +172,7 @@ public class DisconnectSubscribersReportExcel implements ExcelGenerator {
         return address.toString();
     }
 
-    private String getAbbreviatedName(ServiceReportSheetTableDTO dto) {
+    private String getAbbreviatedName(SubscriberAndTariffDTO dto) {
         String abbreviatedName = dto.getSubscriber().getName();
         String[] strings = abbreviatedName.split("\\s+");
         if (strings.length < 2) {

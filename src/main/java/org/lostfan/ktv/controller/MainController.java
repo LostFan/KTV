@@ -118,9 +118,9 @@ public class MainController {
                     ServiceReportModel serviceReportModel= new ServiceReportModel();
                     new ServiceReportView(serviceReportModel);
                     break;
-                case DISCONNECTED_SUBSCRIBERS_SHEET:
-                    DisconnectedSubscribersReportModel disconnectedSubscribersReportModel = new DisconnectedSubscribersReportModel();
-                    new DisconnectedSubscribersReportView(disconnectedSubscribersReportModel);
+                case CONNECTED_DISCONNECTED_SUBSCRIBERS_SHEET:
+                    ConnectedDisconnectedSubscribersReportModel connectedDisconnectedSubscribersReportModel = new ConnectedDisconnectedSubscribersReportModel();
+                    new ConnectedDisconnectedSubscribersReportView(connectedDisconnectedSubscribersReportModel);
             };
         });
         this.view.setMenuFileActionListener(args -> {

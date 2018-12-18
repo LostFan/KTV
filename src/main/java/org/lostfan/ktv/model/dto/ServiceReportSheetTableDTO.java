@@ -34,7 +34,6 @@ public class ServiceReportSheetTableDTO {
         this.date = date;
     }
 
-
     public Integer getServiceId() {
         return serviceId;
     }

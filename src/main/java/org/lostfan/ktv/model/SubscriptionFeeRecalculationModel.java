@@ -112,7 +112,7 @@ public class SubscriptionFeeRecalculationModel extends BaseObservable {
                 Integer months =  Period.between(beginTariffDate, endTariffDate).getMonths();
                 if(months == 1) {
                     allPrice = tariffDAO.getPriceByDate(subscriberTariff.getTariffId(), beginTariffDate);
-                    if(BigDecimal.ZERO.compareTo(allPrice) == 0) {
+                    if(allPrice == null || BigDecimal.ZERO.compareTo(allPrice) == 0) {
                         return null;
                     }
                     renderedService.setPrice(allPrice);

@@ -11,7 +11,7 @@ public enum Reports {
     CLAIM_REPORT("claimReport"),
     CHANNELS_REPORT("channelsReport"),
     SERVICE_SHEET("serviceSheet"),
-    DISCONNECTED_SUBSCRIBERS_SHEET("disconnectedSubscribersSheet");
+    CONNECTED_DISCONNECTED_SUBSCRIBERS_SHEET("connectedDisconnectedSubscribersSheet");
 
     private final String code;
 

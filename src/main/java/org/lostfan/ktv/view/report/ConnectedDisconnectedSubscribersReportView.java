@@ -2,11 +2,11 @@ package org.lostfan.ktv.view.report;
 
 
 import org.lostfan.ktv.domain.Entity;
-import org.lostfan.ktv.model.DisconnectedSubscribersReportModel;
+import org.lostfan.ktv.model.ConnectedDisconnectedSubscribersReportModel;
 import org.lostfan.ktv.model.EntityField;
 import org.lostfan.ktv.model.EntityFieldTypes;
-import org.lostfan.ktv.model.ServiceReportModel;
 import org.lostfan.ktv.model.dto.ServiceReportSheetTableDTO;
+import org.lostfan.ktv.model.dto.SubscriberAndTariffDTO;
 import org.lostfan.ktv.utils.ResourceBundles;
 import org.lostfan.ktv.utils.ViewActionListener;
 import org.lostfan.ktv.validation.NotNullValidator;
@@ -22,23 +22,23 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DisconnectedSubscribersReportView extends FormView {
+public class ConnectedDisconnectedSubscribersReportView extends FormView {
 
     private class ModelObserver implements org.lostfan.ktv.utils.Observer {
         @Override
         public void update(Object args) {
-            DisconnectedSubscribersReportView.this.progressBar.setValue((Integer) args);
+            ConnectedDisconnectedSubscribersReportView.this.progressBar.setValue((Integer) args);
         }
     }
 
     private class ReportTableModel extends AbstractTableModel {
 
-        private List<ServiceReportSheetTableDTO> serviceReportSheetTableDTOs = new ArrayList<>();
+        private List<SubscriberAndTariffDTO> serviceReportSheetTableDTOs = new ArrayList<>();
 
         public ReportTableModel() {
         }
 
-        public ReportTableModel(List<ServiceReportSheetTableDTO> serviceReportSheetTableDTOs) {
+        public ReportTableModel(List<SubscriberAndTariffDTO> serviceReportSheetTableDTOs) {
             this.serviceReportSheetTableDTOs = serviceReportSheetTableDTOs;
         }
 
@@ -90,7 +90,7 @@ public class DisconnectedSubscribersReportView extends FormView {
             super(fieldKey);
             this.panel = EntityPanelFactory.createEntityPanel(EntityFieldTypes.Service);
 
-            this.panel.setParentView(DisconnectedSubscribersReportView.this);
+            this.panel.setParentView(ConnectedDisconnectedSubscribersReportView.this);
         }
 
         @Override
@@ -116,7 +116,7 @@ public class DisconnectedSubscribersReportView extends FormView {
     private JTable reportTable;
     private JProgressBar progressBar;
 
-    private DisconnectedSubscribersReportModel model;
+    private ConnectedDisconnectedSubscribersReportModel model;
 
     private ModelObserver modelObserver;
 
@@ -124,12 +124,14 @@ public class DisconnectedSubscribersReportView extends FormView {
     private ViewActionListener cancelActionListener;
 
     private DateFormField dateField;
+    private BooleanFormField isDisconnectionField;
+    private BooleanFormField isConnectionField;
 
-    public DisconnectedSubscribersReportView(DisconnectedSubscribersReportModel model) {
+    public ConnectedDisconnectedSubscribersReportView(ConnectedDisconnectedSubscribersReportModel model) {
         this(model, null);
     }
 
-    public DisconnectedSubscribersReportView(DisconnectedSubscribersReportModel model, Entity entity) {
+    public ConnectedDisconnectedSubscribersReportView(ConnectedDisconnectedSubscribersReportModel model, Entity entity) {
         this.model = model;
         reportTable = new JTable(new ReportTableModel());
         progressBar = new JProgressBar();
@@ -140,12 +142,18 @@ public class DisconnectedSubscribersReportView extends FormView {
 
         dateField = new DateFormField("renderedService.date");
         addFormField(dateField);
+        isConnectionField = new BooleanFormField("connected");
+        addFormField(isConnectionField);
+        isConnectionField.setValue(true);
+        isDisconnectionField = new BooleanFormField("disconnected");
+        addFormField(isDisconnectionField);
+
 
         this.addButton = new JButton(getGuiString("buttons.generateReport"));
         this.addButton.addActionListener(e -> {
             ReportTableModel reportTableModel =
                 new ReportTableModel(
-                        model.getTurnoverSheetData(dateField.getValue()));
+                        model.getSheetData(dateField.getValue(), isConnectionField.getValue()));
             reportTable.setModel(reportTableModel);
             reportTable.repaint();
             if (this.addActionListener != null) {
@@ -164,7 +172,7 @@ public class DisconnectedSubscribersReportView extends FormView {
             }
             this.clearErrors();
             new Thread(() -> {
-                String message = model.generateExcelReport(dateField.getValue());
+                String message = model.generateExcelReport(dateField.getValue(), isConnectionField.getValue());
                 if (message != null) {
                     exceptionWindow(message);
                 }
@@ -186,6 +194,18 @@ public class DisconnectedSubscribersReportView extends FormView {
             }
 
         }
+
+        this.isDisconnectionField.addValueListener(newValue -> {
+            if ((this.isDisconnectionField.getValue())) {
+                this.isConnectionField.setValue(false);
+            }
+        });
+
+        this.isConnectionField.addValueListener(newValue -> {
+            if ((this.isConnectionField.getValue())) {
+                this.isDisconnectionField.setValue(false);
+            }
+        });
 
 
         this.modelObserver = new ModelObserver();
