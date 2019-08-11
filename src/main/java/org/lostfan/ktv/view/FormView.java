@@ -227,7 +227,7 @@ public class FormView extends FrameView implements Iterable<FormView.FormField> 
         public BigDecimalFormField(String fieldKey) {
             super(fieldKey);
             // TODO: Implement FormattedTextField or another way to filter double values only
-            this.textField = new MoneyTextField();
+            this.textField = new MoneyTextField(fieldKey);
 
             this.textField.addTextChangeListener(v -> fireValueChanged(getValue()));
         }

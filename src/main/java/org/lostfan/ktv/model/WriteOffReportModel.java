@@ -40,7 +40,10 @@ public class WriteOffReportModel extends BaseObservable implements BaseModel {
         List<SubscriberDebit> subscriberDebitsResult = new ArrayList<>();
         Map<Integer, BigDecimal> endPeriodDebit = renderedServiceDAO.getAllRenderedServicesPriceBeforeDate(LocalDate.now());
         Map<Integer, BigDecimal> endPeriodCredit = paymentDAO.getAllPaymentsPriceBeforeDate(LocalDate.now());
-        List<RenderedService> subscriptionFeesByPeriodDate = renderedServiceDAO.getSubscriptionFeesByPeriodDate(date, LocalDate.now());
+        List<RenderedService> subscriptionFeesByPeriodDate = renderedServiceDAO.getSubscriptionFeesByPeriodDate(date, LocalDate.now())
+                .stream()
+                .filter(e -> !(BigDecimal.ZERO.compareTo(e.getPrice()) == 0))
+                .collect(Collectors.toList());
         List<Integer> subscribersWithSubscriptionFeeByPeriod = subscriptionFeesByPeriodDate.stream().mapToInt(e -> e.getSubscriberAccount()).boxed().collect(Collectors.toList());
         for (Map.Entry<Integer, BigDecimal> integerBigDecimalEntry : endPeriodDebit.entrySet()) {
             BigDecimal payedSum = endPeriodCredit.get(integerBigDecimalEntry.getKey());

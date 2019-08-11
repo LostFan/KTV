@@ -9,6 +9,16 @@ public class MoneyTextField extends TextField {
 
     private class IntegerDocumentFilter extends DocumentFilter {
 
+        public IntegerDocumentFilter() {
+            this.numbersAfterPoint = 2;
+        }
+
+        public IntegerDocumentFilter(Integer numbersAfterPoint) {
+            this.numbersAfterPoint = numbersAfterPoint;
+        }
+
+        private Integer numbersAfterPoint;
+
         private boolean hasSign;
 
         private boolean willBeDouble(String insertion, int offset, int lengthToDelete) {
@@ -27,7 +37,7 @@ public class MoneyTextField extends TextField {
                 _hasSign = false;
             }
 
-            if (!newText.matches("^[-\\+]?\\d*(\\d[\\.])?\\d{0,2}$")) {
+            if (!newText.matches("^[-\\+]?\\d*(\\d[\\.])?\\d{0," + numbersAfterPoint + "}$")) {
                 return false;
             }
             int lengthTextAfterPoint = 0;
@@ -73,6 +83,18 @@ public class MoneyTextField extends TextField {
         this();
         setValue(initialValue);
 
+    }
+
+    public MoneyTextField(String name) {
+        super(20);
+        ((AbstractDocument) this.getDocument()).setDocumentFilter(new IntegerDocumentFilter(getNumbersAfterPoint(name)));
+    }
+
+    public static Integer getNumbersAfterPoint(String name) {
+        if("material.price".equals(name)) {
+            return 4;
+        }
+        return 2;
     }
 
     public Integer getValue() {
