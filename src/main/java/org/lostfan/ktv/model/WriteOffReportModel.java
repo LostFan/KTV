@@ -52,8 +52,7 @@ public class WriteOffReportModel extends BaseObservable implements BaseModel {
             }
             if (integerBigDecimalEntry.getValue().add(payedSum.negate()).compareTo(BigDecimal.ZERO) != 0) {
                 if(!subscribersWithSubscriptionFeeByPeriod.contains(integerBigDecimalEntry.getKey())) {
-                      if (subscriberDAO.getNotClosedSubscriberSession(integerBigDecimalEntry.getKey(), LocalDate.now()) == null &&
-                              subscriberDAO.getSubscriberSessions(integerBigDecimalEntry.getKey()).size() != 0) {
+                      if (subscriberDAO.getSubscriberSessions(integerBigDecimalEntry.getKey()).size() != 0) {
 
                           SubscriberDebit subscriberDebit = new SubscriberDebit();
                           subscriberDebit.setSubscriberAccount(integerBigDecimalEntry.getKey());
