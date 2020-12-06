@@ -58,7 +58,7 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
             PreparedStatement preparedStatement = getConnection().prepareStatement(
                     "INSERT INTO \"subscriber\" (\"account\", \"name\", \"street_id\", \"balance\"," +
                             " \"connected\", \"house\", \"building\", \"flat\", \"index\", \"phone\"," +
-                            " \"passport_number\", \"passport_authority\", \"passport_date\" , \"date_of_contract\") " +
+                            " \"passport_number\", \"passport_authority\", \"passport_date\" , \"date_of_contract\", \"information\") " +
                             "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             preparedStatement.setInt(1, subscriber.getAccount());
@@ -103,6 +103,8 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
             } else {
                 preparedStatement.setDate(14, null);
             }
+
+            preparedStatement.setString(15, subscriber.getInformation());
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -126,7 +128,8 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
                                 "\"passport_number\" = ?, " +
                                 "\"passport_authority\" = ?, " +
                                 "\"passport_date\" = ?, " +
-                                "\"date_of_contract\" = ?" +
+                                "\"date_of_contract\" = ?," +
+                                "\"information\" = ?" +
                                 "where \"account\" = ?");
                 preparedStatement.setString(1, subscriber.getName());
                 if(subscriber.getStreetId() != null) {
@@ -171,7 +174,9 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
                     preparedStatement.setDate(13, null);
                 }
 
-                preparedStatement.setInt(14, subscriber.getAccount());
+                preparedStatement.setString(14, subscriber.getInformation());
+
+                preparedStatement.setInt(15, subscriber.getAccount());
                 preparedStatement.executeUpdate();
 
             } catch (SQLException ex) {
@@ -1201,6 +1206,7 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
         if (contractDate != null) {
             subscriber.setContractDate(contractDate.toLocalDate());
         }
+        subscriber.setInformation(rs.getString("information"));
         return subscriber;
     }
 }
