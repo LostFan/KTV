@@ -59,7 +59,7 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
                     "INSERT INTO \"subscriber\" (\"account\", \"name\", \"street_id\", \"balance\"," +
                             " \"connected\", \"house\", \"building\", \"flat\", \"index\", \"phone\"," +
                             " \"passport_number\", \"passport_authority\", \"passport_date\" , \"date_of_contract\", \"information\") " +
-                            "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                            "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             preparedStatement.setInt(1, subscriber.getAccount());
             preparedStatement.setString(2, subscriber.getName());
