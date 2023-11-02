@@ -38,6 +38,9 @@ public class PaymentsLoader {
             while ((sCurrentLine = br.readLine()) != null) {
                 String str[] = sCurrentLine.split("\\^");
                 try {
+                    if (!"1".equals(str[1])) {
+                        continue;
+                    }
                     Payment payment = new Payment();
                     payment.setSubscriberAccount(Integer.parseInt(str[2]));
                     payment.setDate(createDate(str[9]));

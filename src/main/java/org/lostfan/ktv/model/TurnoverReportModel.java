@@ -163,29 +163,36 @@ public class TurnoverReportModel extends BaseObservable implements BaseModel {
                         || e.getCarriedForwardBalanceDebit().add(e.getCarriedForwardBalanceCredit().negate()).compareTo((BigDecimal.ZERO)) != 0)
                 .collect(Collectors.toList());
 
-        for (TurnoverSheetTableDTO turnoverSheetTableDTO : turnoverSheetTableDTOs) {
-            turnoverSheetTableDTO.setSubscriber(subscriberDAO.get(turnoverSheetTableDTO.getSubscriberAccount()));
-            if(turnoverSheetTableDTO.getSubscriber() != null) {
-                turnoverSheetTableDTO.setSubscriberStreet(streetDAO.get(turnoverSheetTableDTO.getSubscriber().getStreetId()));
+        for (TurnoverSheetTableDTO ts : turnoverSheetTableDTOs) {
+            ts.setSubscriber(subscriberDAO.get(ts.getSubscriberAccount()));
+            if(ts.getSubscriber() != null) {
+                ts.setSubscriberStreet(streetDAO.get(ts.getSubscriber().getStreetId()));
+            }
+            BigDecimal taxesBase = ts.getBroughtForwardBalanceDebit().add(ts.getTurnoverBalanceDebit()).add(ts.getBroughtForwardBalanceCredit().negate()).add(ts.getTurnoverBalanceCredit().negate());
+            if (taxesBase.compareTo(BigDecimal.ZERO) < 0) {
+                ts.setTaxesBase(ts.getBroughtForwardBalanceDebit().add(ts.getTurnoverBalanceDebit()));
+            } else {
+                ts.setTaxesBase(ts.getBroughtForwardBalanceCredit().add(ts.getTurnoverBalanceCredit()));
             }
         }
 
-        for (TurnoverSheetTableDTO turnoverSheetTableDTO : turnoverSheetTableDTOs) {
-            BigDecimal carriedForwardBalance =
-                    turnoverSheetTableDTO.getBroughtForwardBalanceDebit().add(turnoverSheetTableDTO.getBroughtForwardBalanceCredit().negate())
-                    .add(turnoverSheetTableDTO.getTurnoverBalanceDebit()).add(turnoverSheetTableDTO.getTurnoverBalanceCredit().negate());
-            if(carriedForwardBalance != turnoverSheetTableDTO.getCarriedForwardBalanceDebit().add(turnoverSheetTableDTO.getCarriedForwardBalanceCredit().negate())) {
-                System.out.println(turnoverSheetTableDTO.getSubscriberAccount());
-            }
-        }
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getBroughtForwardBalanceCredit()).reduce(BigDecimal.ZERO, BigDecimal::add));
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getBroughtForwardBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getTurnoverBalanceCredit()).reduce(BigDecimal.ZERO, BigDecimal::add));
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getTurnoverBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getCarriedForwardBalanceCredit()).reduce(BigDecimal.ZERO, BigDecimal::add));
-        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getCarriedForwardBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+//        for (TurnoverSheetTableDTO turnoverSheetTableDTO : turnoverSheetTableDTOs) {
+//            BigDecimal carriedForwardBalance =
+//                    turnoverSheetTableDTO.getBroughtForwardBalanceDebit().add(turnoverSheetTableDTO.getBroughtForwardBalanceCredit().negate())
+//                    .add(turnoverSheetTableDTO.getTurnoverBalanceDebit()).add(turnoverSheetTableDTO.getTurnoverBalanceCredit().negate());
+//            if(carriedForwardBalance != turnoverSheetTableDTO.getCarriedForwardBalanceDebit().add(turnoverSheetTableDTO.getCarriedForwardBalanceCredit().negate())) {
+//                System.out.println(turnoverSheetTableDTO.getSubscriberAccount());
+//            }
+//        }
+//        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getBroughtForwardBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+//        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getTurnoverBalanceCredit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+//        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getTurnoverBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+//        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getCarriedForwardBalanceCredit()).reduce(BigDecimal.ZERO, BigDecimal::add));
+//        System.out.println(turnoverSheetTableDTOs.stream().map(i -> i.getCarriedForwardBalanceDebit()).reduce(BigDecimal.ZERO, BigDecimal::add));
         return turnoverSheetTableDTOs;
     }
+
+
 
     public String generateExcelReport(Boolean isAdditional,
                                       Integer serviceId, LocalDate date) {

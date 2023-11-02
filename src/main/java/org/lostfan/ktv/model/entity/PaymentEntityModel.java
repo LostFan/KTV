@@ -19,6 +19,8 @@ import org.lostfan.ktv.model.*;
 import org.lostfan.ktv.model.searcher.EntitySearcherModel;
 import org.lostfan.ktv.utils.PaymentsLoader;
 import org.lostfan.ktv.validation.*;
+import org.lostfan.ktv.view.FormView;
+import org.lostfan.ktv.view.entity.LoadPaymentsView;
 
 public class PaymentEntityModel extends BaseDocumentModel<Payment> {
 
@@ -118,6 +120,10 @@ public class PaymentEntityModel extends BaseDocumentModel<Payment> {
         return progress;
     }
 
+    public void setProgress(Integer progress) {
+        this.progress = progress;
+    }
+
     /**
      * Creates a new Payment list based on a payment file and the current loaded payments.
      *
@@ -142,9 +148,13 @@ public class PaymentEntityModel extends BaseDocumentModel<Payment> {
     }
 
     public void createPayments(List<Payment> loadedPayments) {
+        LocalDate date = LocalDate.MAX;
+        if (loadedPayments.size() > 0) {
+            date = loadedPayments.get(0).getDate();
+        }
         Integer count = 0;
         paymentsMap = getDao().getServiceAndSubscriberPaymentMap();
-        renderedServicesMap = renderedServiceDAO.getServiceAndSubscriberRenderedServiceMap();
+        renderedServicesMap = renderedServiceDAO.getServiceAndSubscriberRenderedServiceMap(date);
         long begin = System.currentTimeMillis();
         for (Payment loadedPayment : loadedPayments) {
             if (BigDecimal.ZERO.compareTo(loadedPayment.getPrice()) == 0 || subscriberDAO.get(loadedPayment.getSubscriberAccount()) == null) {
@@ -402,5 +412,28 @@ public class PaymentEntityModel extends BaseDocumentModel<Payment> {
         getDao().deleteByDate(date);
         updateEntitiesList();
         return validationResult;
+    }
+
+    public void savePayments(List<Payment> payments, FormView view) {
+        ValidationResult result = ValidationResult.createEmpty();
+        for (Payment payment : payments) {
+            result = getValidator().validate(payment, result);
+            result = getPeriodValidator().validate(payment, result);
+            if (result.hasErrors()) {
+                view.showErrors(result.getErrors());
+                return;
+            }
+        }
+        int size = payments.size();
+        int count = 0;
+        progress = 0;
+        for (Payment payment : payments) {
+            progress = 100 * count++ / size;
+            notifyObservers(null);
+            save(payment);
+        }
+        progress = 100;
+        notifyObservers(null);
+        view.hide();
     }
 }

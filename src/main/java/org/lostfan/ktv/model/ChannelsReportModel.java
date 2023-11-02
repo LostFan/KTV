@@ -32,7 +32,7 @@ public class ChannelsReportModel  {
 
         for (Map.Entry<Integer, Integer> subscriberWithCurrentTariffs : subscribersWithCurrentTariffs.entrySet()) {
             if(subscriberWithCurrentTariffs.getValue() != null && subscriberWithCurrentTariffs.getValue() != 0) {
-                if (subscriberDAO.getNotClosedSubscriberSession(subscriberWithCurrentTariffs.getKey(), date) != null) {
+                if (subscriberDAO.getSubscriberSessionAtDate(subscriberWithCurrentTariffs.getKey(), date) != null) {
 
 
 //            if (integerBigDecimalEntry.getValue().add(payedSum.negate()).compareTo(BigDecimal.ZERO) != 0) {

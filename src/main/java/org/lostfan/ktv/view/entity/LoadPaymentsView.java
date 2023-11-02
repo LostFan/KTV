@@ -141,15 +141,20 @@ public class LoadPaymentsView extends FormView {
                     model.addObserver(this.modelObserver);
                     modelObserver.setFilesCount(files.length);
                     Integer filesCounter = 0;
-
+                    List<Payment> newPayments = new ArrayList<>();
+                    Boolean confirmAdding = null;
                     for (File file : files) {
+
                         if(!isOpened) {
                             return;
                         }
                         modelObserver.setFilesCounter(filesCounter++);
                         if (bankFileNames.contains(file.getName())
                                 || !LoadPaymentsView.this.model.getPaymentsByBankFileName(file.getName()).isEmpty()) {
-                            if (!confirmAdding()) {
+                            if (confirmAdding == null) {
+                                confirmAdding = confirmAdding();
+                            }
+                            if (!confirmAdding) {
                                 continue;
                             }
                         } else {
@@ -158,15 +163,15 @@ public class LoadPaymentsView extends FormView {
 
 
 
-                        List<Payment> newPayments = paymentsLoader.load(file);
+                        newPayments.addAll(paymentsLoader.load(file));
                         for (Payment payment : newPayments) {
                             payment.setDate(dateField.getValue());
                         }
-                        payments.addAll(newPayments);
+//                        payments.addAll(newPayments);
 
                     }
                     if (LoadPaymentsView.this.loadPaymentFileActionListener != null) {
-                        LoadPaymentsView.this.loadPaymentFileActionListener.actionPerformed(payments);
+                        LoadPaymentsView.this.loadPaymentFileActionListener.actionPerformed(newPayments);
                         this.entityInnerTableView.getTable().revalidate();
                     }
                     LoadPaymentsView.this.addButton.setEnabled(true);

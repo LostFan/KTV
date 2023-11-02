@@ -251,12 +251,16 @@ public class PostGreRenderedServiceDAO extends PostgreBaseDao implements Rendere
     public Map<Integer, BigDecimal> getAllRenderedServicesPriceForSubscriberByServiceIdBeforeDate(int serviceId, LocalDate date) {
         Map<Integer, BigDecimal> subscribersPricesInMonth = new HashMap<>();
         try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT \"subscriber_account\",sum(\"price\") as \"price\" FROM \"rendered_service\" where \"service_id\" = ? AND \"date\" < ? group by \"subscriber_account\"");
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT s.account, rs.price from (SELECT subscriber_account,sum(rs.price) as price FROM rendered_service rs where (rs.service_id = ? AND rs.date < ?)\n" +
+                    "group by subscriber_account) as rs\n" +
+                    "right join subscriber s on rs.subscriber_account = s.account");
             preparedStatement.setInt(1, serviceId);
             preparedStatement.setDate(2, Date.valueOf(date.withDayOfMonth(1)));
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
-                subscribersPricesInMonth.put(rs.getInt("subscriber_account"), rs.getBigDecimal("price"));
+                int account = rs.getInt("account");
+                BigDecimal price = rs.getBigDecimal("price");
+                subscribersPricesInMonth.put(account, price != null ? price : BigDecimal.ZERO);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -351,6 +355,34 @@ public class PostGreRenderedServiceDAO extends PostgreBaseDao implements Rendere
                     "select \"subscriber_account\", \"service_id\"," +
                             " sum(\"price\")  from \"rendered_service\"" +
                             " group by \"subscriber_account\", \"service_id\"");
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                RenderedService payment = new RenderedService();
+                payment.setServiceId(rs.getInt("service_id"));
+                payment.setSubscriberAccount(rs.getInt("subscriber_account"));
+                payment.setPrice(rs.getBigDecimal("sum"));
+                List<RenderedService> payments = hashMap.get(rs.getInt("subscriber_account"));
+                if (payments == null) {
+                    payments = new ArrayList<>();
+                }
+                payments.add(payment);
+                hashMap.put(rs.getInt("subscriber_account"), payments);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DAOException();
+        }
+        return hashMap;
+    }
+
+    public Map<Integer, List<RenderedService>> getServiceAndSubscriberRenderedServiceMap(LocalDate date) {
+        Map<Integer, List<RenderedService>> hashMap = new HashMap<>();
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement(
+                    "select \"subscriber_account\", \"service_id\"," +
+                            " sum(\"price\")  from \"rendered_service\"" +
+                            " where \"date\" <= ? group by \"subscriber_account\", \"service_id\"");
+            preparedStatement.setDate(1, Date.valueOf(date));;
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 RenderedService payment = new RenderedService();

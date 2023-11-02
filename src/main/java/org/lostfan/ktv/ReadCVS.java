@@ -1,53 +1,242 @@
 package org.lostfan.ktv;
-//
-//
-//import java.io.BufferedReader;
-//import java.io.FileInputStream;
-//import java.io.FileNotFoundException;
-//import java.io.IOException;
-//import java.io.InputStreamReader;
-//import java.sql.PreparedStatement;
-//import java.sql.ResultSet;
-//import java.sql.SQLException;
-//import java.time.LocalDate;
-//import java.time.format.DateTimeFormatter;
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Map;
-//
-//import org.lostfan.ktv.dao.DAOFactory;
-//import org.lostfan.ktv.dao.impl.postgre.PostGreDaoFactory;
-//import org.lostfan.ktv.domain.Payment;
-//import org.lostfan.ktv.domain.RenderedService;
-//import org.lostfan.ktv.domain.Service;
-//import org.lostfan.ktv.domain.Street;
-//import org.lostfan.ktv.domain.Subscriber;
-//import org.lostfan.ktv.domain.SubscriberSession;
-//import org.lostfan.ktv.domain.SubscriberTariff;
-//import org.lostfan.ktv.domain.Tariff;
-//import org.lostfan.ktv.domain.TariffPrice;
-//import org.lostfan.ktv.model.FixedServices;
-//import org.lostfan.ktv.utils.ConnectionManager;
-//import org.lostfan.ktv.utils.PostgreConnectionManager;
-//import org.lostfan.ktv.utils.ResourceBundles;
+
+
+import java.awt.*;
+import java.io.*;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import jxl.Workbook;
+import jxl.format.Alignment;
+import jxl.write.*;
+import jxl.write.Label;
+import jxl.write.Number;
+import org.lostfan.ktv.dao.DAOFactory;
+import org.lostfan.ktv.dao.impl.postgre.PostGreDaoFactory;
+import org.lostfan.ktv.domain.Payment;
+import org.lostfan.ktv.domain.RenderedService;
+import org.lostfan.ktv.domain.Service;
+import org.lostfan.ktv.domain.Street;
+import org.lostfan.ktv.domain.Subscriber;
+import org.lostfan.ktv.domain.SubscriberSession;
+import org.lostfan.ktv.domain.SubscriberTariff;
+import org.lostfan.ktv.domain.Tariff;
+import org.lostfan.ktv.domain.TariffPrice;
+import org.lostfan.ktv.model.FixedServices;
+import org.lostfan.ktv.model.PaymentTypes;
+import org.lostfan.ktv.utils.ConnectionManager;
+import org.lostfan.ktv.utils.DateFormatter;
+import org.lostfan.ktv.utils.PostgreConnectionManager;
+import org.lostfan.ktv.utils.ResourceBundles;
 //
 public class ReadCVS {
     public static void main(String[] args) {
-//        ReadCVS obj = new ReadCVS();
-//        ConnectionManager.setManager(new PostgreConnectionManager());
-//        DAOFactory.setDefaultDAOFactory(new PostGreDaoFactory());
+        ReadCVS obj = new ReadCVS();
+        ConnectionManager.setManager(new PostgreConnectionManager());
+        DAOFactory.setDefaultDAOFactory(new PostGreDaoFactory());
+
+
+        obj.generate();
+        ConnectionManager.getManager().close();
+//        try {
+//            Thread.sleep(15000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 //
-//
-//        obj.run();
-//        ConnectionManager.getManager().close();
-////        try {
-////            Thread.sleep(15000);
-////        } catch (InterruptedException e) {
-////            e.printStackTrace();
-////        }
-//
+    }
+
+
+    private List<Payment> loadERIP() {
+        String file = "20200620233.202";
+        String line = "";
+        String cvsSplitBy = ";";
+        List<Payment> payments = new ArrayList<>();
+        try {
+            FileInputStream fis =  new FileInputStream(file);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fis, "Cp1251"));
+            String sCurrentLine;
+            while ((sCurrentLine = br.readLine()) != null) {
+                String[] str = sCurrentLine.split("\\^");
+                try {
+//                    if (!"1".equals(str[1])) {
+//                        continue;
+//                    }
+                    System.out.println(str[1]);
+//                    Payment payment = new Payment();
+//                    payment.setSubscriberAccount(Integer.parseInt(str[2]));
+//                    payment.setDate(createDate(str[9]));
+////                    payment.setBankFileName(file.getName());
+////                    payment.setPrice(Integer.parseInt(str[6].split("\\.")[0]));
+//                    payment.setPrice(new BigDecimal(str[6]));
+//                    payment.setPaymentTypeId(PaymentTypes.BANK.getId());
+//                    payments.add(payment);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return payments;
+    }
+
+    public String generate() {
+
+        WritableWorkbook workbook;
+        String message = null;
+        try {
+            Integer row = 0;
+            Integer SUBSCRIBER_ID_COLUMN = row++;
+            Integer SUBSCRIBER_NAME_COLUMN = row++;
+            Integer ADDRESS_COLUMN = row++;
+            Integer STATUS_COLUMN = row++;
+            Integer CONNECTION_DATE_COLUMN = row++;
+            Integer DISCONNECTION_DATE_COLUMN = row++;
+            Integer TARIFF_COLUMN = row++;
+            Integer TARIFF_DATE_COLUMN = row++;
+            Integer PAYMENT_PRICE_DEBIT = row++;
+            Integer PAYMENT_PRICE_CREDIT = row++;
+            //Creating WorkBook
+            String fileName = String.format("%s - %s",
+                    "result", DateFormatter.format(LocalDate.now()));
+            File resultfile = new File(fileName + ".xls");
+            workbook = Workbook.createWorkbook(resultfile);
+            //Creating sheet
+            WritableSheet sheet = workbook.createSheet("PAGE 1", 0);
+            sheet.setColumnView(SUBSCRIBER_ID_COLUMN, 8);
+            sheet.setColumnView(SUBSCRIBER_NAME_COLUMN, 20);
+            sheet.setColumnView(ADDRESS_COLUMN, 30);
+            sheet.setColumnView(STATUS_COLUMN, 20);
+            sheet.setColumnView(CONNECTION_DATE_COLUMN, 20);
+            sheet.setColumnView(DISCONNECTION_DATE_COLUMN, 20);
+            sheet.setColumnView(TARIFF_COLUMN, 20);
+            sheet.setColumnView(TARIFF_DATE_COLUMN, 20);
+            sheet.setColumnView(PAYMENT_PRICE_DEBIT, 20);
+            sheet.setColumnView(PAYMENT_PRICE_CREDIT, 20);
+            WritableCellFormat cellFormat = new WritableCellFormat();
+            cellFormat.setAlignment(Alignment.CENTRE);
+            row = 0;
+
+            //Addding cells
+            sheet.addCell(new Label(SUBSCRIBER_ID_COLUMN, row, ResourceBundles.getEntityBundle().getString(
+                    "subscriber"), cellFormat));
+            sheet.addCell(new Label(SUBSCRIBER_NAME_COLUMN, row, ResourceBundles.getEntityBundle().getString(
+                    "subscriber.name"), cellFormat));
+            sheet.addCell(new Label(ADDRESS_COLUMN, row, ResourceBundles.getGuiBundle().getString(
+                    "address"), cellFormat));
+            sheet.addCell(new Label(STATUS_COLUMN, row, "Статус", cellFormat));
+            sheet.addCell(new Label(CONNECTION_DATE_COLUMN, row, "Дата подключения", cellFormat));
+            sheet.addCell(new Label(DISCONNECTION_DATE_COLUMN, row, "Дата отключения", cellFormat));
+            sheet.addCell(new Label(TARIFF_COLUMN, row, "Пакет", cellFormat));
+            sheet.addCell(new Label(TARIFF_DATE_COLUMN, row, "Дата установки пакета", cellFormat));
+
+            sheet.addCell(new Label(PAYMENT_PRICE_DEBIT, row, ResourceBundles.getGuiBundle().getString(
+                    "debit"), cellFormat));
+            sheet.addCell(new Label(PAYMENT_PRICE_CREDIT, row, ResourceBundles.getGuiBundle().getString(
+                    "credit"), cellFormat));
+            row++;
+
+            String file = "202008.202";
+            String line = "";
+            String cvsSplitBy = ";";
+            List<Payment> payments = new ArrayList<>();
+            try {
+                FileInputStream fis =  new FileInputStream(file);
+                BufferedReader br = new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));
+                String sCurrentLine;
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                while ((sCurrentLine = br.readLine()) != null) {
+                    String[] str = sCurrentLine.split("\\^");
+                    try {
+//                    if (!"1".equals(str[1])) {
+//                        continue;
+//                    }
+                        sheet.addCell(new jxl.write.Number(SUBSCRIBER_ID_COLUMN, row, Integer.parseInt(str[1])));
+                        SubscriberSession notClosedSubscriberSession = DAOFactory.getDefaultDAOFactory().getSubscriberDAO().getNotClosedSubscriberSession(Integer.parseInt(str[1]), LocalDate.now());
+                        SubscriberTariff tariffByDate = DAOFactory.getDefaultDAOFactory().getSubscriberDAO().getSubscriberTariffAtDate(Integer.parseInt(str[1]), LocalDate.now());
+                        if (notClosedSubscriberSession != null) {
+                            sheet.addCell(new Label(STATUS_COLUMN, row, "Подключен"));
+                            sheet.addCell(new Label(CONNECTION_DATE_COLUMN, row,  dateTimeFormatter.format(notClosedSubscriberSession.getConnectionDate())));
+
+                        } else {
+                            sheet.addCell(new Label(STATUS_COLUMN, row, "Отключен"));
+                            SubscriberSession closedSubscriberSession = DAOFactory.getDefaultDAOFactory().getSubscriberDAO().getClosedSubscriberSession(Integer.parseInt(str[1]), LocalDate.now());
+                            sheet.addCell(new Label(CONNECTION_DATE_COLUMN, row,  dateTimeFormatter.format(closedSubscriberSession.getConnectionDate())));
+                            sheet.addCell(new Label(DISCONNECTION_DATE_COLUMN, row,  dateTimeFormatter.format(closedSubscriberSession.getDisconnectionDate())));
+                        }
+                        if (tariffByDate != null) {
+                            sheet.addCell(new Label(TARIFF_COLUMN, row, DAOFactory.getDefaultDAOFactory().getTariffDAO().get(tariffByDate.getTariffId()).getName()));
+                            sheet.addCell(new Label(TARIFF_DATE_COLUMN, row,  dateTimeFormatter.format(tariffByDate.getConnectTariff())));
+                        }
+                        sheet.addCell(new Label(SUBSCRIBER_NAME_COLUMN, row, str[2]));
+                        sheet.addCell(new Label(ADDRESS_COLUMN, row, str[3]));
+                        double v = Double.parseDouble(str[5]);
+                        if (v>0) {
+                            sheet.addCell(new Number(PAYMENT_PRICE_DEBIT, row, v));
+                            sheet.addCell(new Number(PAYMENT_PRICE_CREDIT, row, 0));
+                        } else if (v<0) {
+                            sheet.addCell(new Number(PAYMENT_PRICE_DEBIT, row, 0));
+                            sheet.addCell(new Number(PAYMENT_PRICE_CREDIT, row, v*-1));
+                        } else {
+                            sheet.addCell(new Number(PAYMENT_PRICE_DEBIT, row, 0));
+                            sheet.addCell(new Number(PAYMENT_PRICE_CREDIT, row, 0));
+                        }
+                        row++;
+                        System.out.println(str[1]);
+//                    Payment payment = new Payment();
+//                    payment.setSubscriberAccount(Integer.parseInt(str[2]));
+//                    payment.setDate(createDate(str[9]));
+////                    payment.setBankFileName(file.getName());
+////                    payment.setPrice(Integer.parseInt(str[6].split("\\.")[0]));
+//                    payment.setPrice(new BigDecimal(str[6]));
+//                    payment.setPaymentTypeId(PaymentTypes.BANK.getId());
+//                    payments.add(payment);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+
+            workbook.write();
+            workbook.close();
+            Desktop desktop = null;
+            if (Desktop.isDesktopSupported()) {
+                desktop = Desktop.getDesktop();
+            }
+            try {
+                desktop.open(resultfile);
+            } catch (IOException | NullPointerException ioe) {
+                message = "message.fail";
+            }
+        } catch (IOException e) {
+            if (e instanceof FileNotFoundException) {
+
+                message = "message.fileIsUsed";
+            } else {
+                message = "message.fail";
+            }
+        } catch (WriteException e) {
+            message = "message.fail";
+        }
+        return message;
+    }
+
+    private LocalDate createDate(String s) {
+        return LocalDate.of(Integer.parseInt(s.substring(0, 4)), Integer.parseInt(s.substring(4, 6)), Integer.parseInt(s.substring(6, 8)));
     }
 //
 //    // steps
@@ -61,7 +250,23 @@ public class ReadCVS {
 //    //create sessions  and subs tariffs
 //
 //
-//    public void run() {
+    public void run() {
+        //        String csvFile = "BASES/" + fileName;
+//        BufferedReader br = null;
+//        String line = "";
+//        String cvsSplitBy = ";";
+//
+//        Map<Integer, Integer> map = new HashMap<>();
+//        try {
+//            FileInputStream fis =  new FileInputStream(csvFile);
+//            br = new BufferedReader(new InputStreamReader(fis, "Cp1251"));
+//            int size = -1;
+//            while ((line = br.readLine()) != null) {
+//                String[] row = line.split(cvsSplitBy);
+//                map.put(parseInt(row[1]), parseInt(row[4]));
+//            }
+    }
+//    }
 ////        getPayments();
 ////        getSubscribersIdWithoutConnection();
 //

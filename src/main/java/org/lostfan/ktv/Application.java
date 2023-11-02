@@ -17,7 +17,7 @@ public class Application {
             DAOFactory.setDefaultDAOFactory(new PostGreDaoFactory());
         } catch (ApplicationException ex) {
             // TODO: show this message over the main view
-            JOptionPane.showMessageDialog(null, ResourceBundles.getGuiBundle().getString(ex.getCode()),
+            JOptionPane.showMessageDialog(null, ex.getMessage(),
                     "Application Error", JOptionPane.ERROR_MESSAGE);
             return;
         }

@@ -248,6 +248,25 @@ public class PostGrePaymentDAO extends PostgreBaseDao implements PaymentDAO {
         return payments;
     }
 
+    public Map<Integer, BigDecimal> getAllPaymentsPriceInMonthForSubscriber(LocalDate date) {
+        Map<Integer, BigDecimal> subscribersPricesInMonth = new HashMap<>();
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT \"subscriber_account\",sum(\"price\") as \"price\" FROM \"payment\" where \"date\" >= ? AND \"date\" < ? group by \"subscriber_account\"");
+            preparedStatement.setDate(1, Date.valueOf(date.withDayOfMonth(1)));
+            preparedStatement.setDate(2, Date.valueOf(date.withDayOfMonth(1).plusMonths(1)));
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                subscribersPricesInMonth.put(rs.getInt("subscriber_account"), rs.getBigDecimal("price"));
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DAOException();
+        }
+
+        return subscribersPricesInMonth;
+    }
+
     public Map<Integer, BigDecimal> getAllPaymentsPriceInMonthForSubscriberByServiceId(int serviceId, LocalDate date) {
         Map<Integer, BigDecimal> subscribersPricesInMonth = new HashMap<>();
         try {

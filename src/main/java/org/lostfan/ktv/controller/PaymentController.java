@@ -33,7 +33,7 @@ public class PaymentController extends EntityController{
         LoadPaymentsView loadPaymentsView = new LoadPaymentsView(paymentEntityModel);
         loadPaymentsView.setAddActionListener(args_ -> {
             List<Payment> payments = (List<Payment>) args_;
-            savePayments(paymentEntityModel, payments, loadPaymentsView);
+            paymentEntityModel.savePayments(payments, loadPaymentsView);
         });
 
         loadPaymentsView.setLoadPaymentFileActionListener(args_ -> {
@@ -71,24 +71,8 @@ public class PaymentController extends EntityController{
         });
         entityView.setAddActionListener(args_ -> {
             List<Payment> payments = (List<Payment>) args_;
-            savePayments(model, payments, entityView);
+            model.savePayments(payments, entityView);
         });
-    }
-
-    private void savePayments(PaymentEntityModel model, List<Payment> payments, FormView view) {
-        ValidationResult result = ValidationResult.createEmpty();
-        for (Payment payment : payments) {
-            result = model.getValidator().validate(payment, result);
-            result = model.getPeriodValidator().validate(payment, result);
-            if (result.hasErrors()) {
-                view.showErrors(result.getErrors());
-                return;
-            }
-        }
-        for (Payment payment : payments) {
-            model.save(payment);
-        }
-        view.hide();
     }
 
     protected void changeActionPerformed(Object args) {

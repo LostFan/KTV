@@ -121,6 +121,16 @@ public class MainController {
                 case CONNECTED_DISCONNECTED_SUBSCRIBERS_SHEET:
                     ConnectedDisconnectedSubscribersReportModel connectedDisconnectedSubscribersReportModel = new ConnectedDisconnectedSubscribersReportModel();
                     new ConnectedDisconnectedSubscribersReportView(connectedDisconnectedSubscribersReportModel);
+                    break;
+                case PREPAYMENT_REPORT:
+                    PrepaymentReportModel prepaymentReportModel = new PrepaymentReportModel();
+                    new PrepeymentReportView(prepaymentReportModel);
+                    break;
+                case CREDIT_REPORT:
+                    CreditReportModel creditReportModel = new CreditReportModel();
+                    new CreditReportView(creditReportModel);
+                    break;
+
             };
         });
         this.view.setMenuFileActionListener(args -> {

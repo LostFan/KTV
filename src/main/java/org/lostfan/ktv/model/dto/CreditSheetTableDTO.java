@@ -2,12 +2,29 @@ package org.lostfan.ktv.model.dto;
 
 import org.lostfan.ktv.domain.Street;
 import org.lostfan.ktv.domain.Subscriber;
-import org.lostfan.ktv.utils.ResourceBundles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class TurnoverSheetTableDTO {
+public class CreditSheetTableDTO {
+
+    public CreditSheetTableDTO(TurnoverSheetTableDTO turnoverSheetTableDTO) {
+        this.broughtForwardBalanceCredit = turnoverSheetTableDTO.getBroughtForwardBalanceCredit();
+        this.broughtForwardBalanceDebit = turnoverSheetTableDTO.getBroughtForwardBalanceDebit();
+        this.carriedForwardBalanceCredit = turnoverSheetTableDTO.getCarriedForwardBalanceCredit();
+        this.carriedForwardBalanceDebit = turnoverSheetTableDTO.getCarriedForwardBalanceDebit();
+        this.turnoverBalanceCredit = turnoverSheetTableDTO.getTurnoverBalanceCredit();
+        this.turnoverBalanceDebit = turnoverSheetTableDTO.getTurnoverBalanceDebit();
+        this.taxesBase = turnoverSheetTableDTO.getTaxesBase();
+        this.subscriberAccount = turnoverSheetTableDTO.getSubscriberAccount();
+        this.subscriberStreet = turnoverSheetTableDTO.getSubscriberStreet();
+        this.subscriber = turnoverSheetTableDTO.getSubscriber();
+        this.serviceId = turnoverSheetTableDTO.getServiceId();
+        this.date = turnoverSheetTableDTO.getDate();
+    }
+
+
+    private LocalDate disconnectionDate;
 
     private Integer subscriberAccount;
 
@@ -32,16 +49,6 @@ public class TurnoverSheetTableDTO {
     private Street subscriberStreet;
 
     private BigDecimal taxesBase;
-
-    public TurnoverSheetTableDTO() {
-        this.broughtForwardBalanceCredit = BigDecimal.ZERO;
-        this.broughtForwardBalanceDebit = BigDecimal.ZERO;
-        this.carriedForwardBalanceCredit = BigDecimal.ZERO;
-        this.carriedForwardBalanceDebit = BigDecimal.ZERO;
-        this.turnoverBalanceCredit = BigDecimal.ZERO;
-        this.turnoverBalanceDebit = BigDecimal.ZERO;
-        this.taxesBase = BigDecimal.ZERO;
-    }
 
     public Integer getSubscriberAccount() {
         return subscriberAccount;
@@ -137,5 +144,13 @@ public class TurnoverSheetTableDTO {
 
     public void setTaxesBase(BigDecimal taxesBase) {
         this.taxesBase = taxesBase;
+    }
+
+    public LocalDate getDisconnectionDate() {
+        return disconnectionDate;
+    }
+
+    public void setDisconnectionDate(LocalDate disconnectionDate) {
+        this.disconnectionDate = disconnectionDate;
     }
 }

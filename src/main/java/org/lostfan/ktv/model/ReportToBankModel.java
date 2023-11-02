@@ -83,17 +83,22 @@ public class ReportToBankModel extends BaseObservable implements BaseModel {
         Map<Integer, BigDecimal> result = new TreeMap<>();
         Map<Integer, BigDecimal> resultRenderedServices = renderedServiceDAO. getAllRenderedServicesPriceBeforeDate(date);
         Map<Integer, BigDecimal> resultPayments = paymentDAO. getAllPaymentsPriceBeforeDate(date);
+        List<Subscriber> subscribers = subscriberDAO.getAll();
         Integer i = 0;
         DateTimeFormatter yearMonthDayFormatter = DateTimeFormatter.ofPattern("YYYYMMdd");
         DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MM.YYYY");
         BigDecimal sum = BigDecimal.ZERO;
-        for (Map.Entry<Integer, BigDecimal> renderedServiceEntry : resultRenderedServices.entrySet()) {
-            BigDecimal value = renderedServiceEntry.getValue();
-            BigDecimal paymentValue = resultPayments.get(renderedServiceEntry.getKey());
+        for (Subscriber subscriber : subscribers) {
+            BigDecimal renderedServiceValue = resultRenderedServices.get(subscriber.getAccount());
+            BigDecimal paymentValue = resultPayments.get(subscriber.getAccount());
+            BigDecimal value = BigDecimal.ZERO;
+            if(renderedServiceValue != null) {
+                value = value.add(renderedServiceValue);
+            }
             if(paymentValue != null) {
                 value = value.add(paymentValue.negate());
             }
-            result.put(renderedServiceEntry.getKey(), value);
+            result.put(subscriber.getAccount(), value);
         }
         Integer size = 0;
         for (BigDecimal aDouble : result.values()) {
@@ -185,7 +190,7 @@ public class ReportToBankModel extends BaseObservable implements BaseModel {
     private String saveToFile(List<String> rows, LocalDate date) {
         String message = null;
 
-        DateTimeFormatter yearMonthDayFormatter = DateTimeFormatter.ofPattern("YYYYMM");
+        DateTimeFormatter yearMonthDayFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
         BufferedWriter bw = null;
         try {
             File file = new File("202");
