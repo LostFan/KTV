@@ -98,4 +98,6 @@ public interface SubscriberDAO extends EntityDAO<Subscriber> {
     List<Integer> getConnectedSubscribers();
 
     List<Integer> getConnectedSubscribers(LocalDate date);
+
+    List<Integer> getInactiveSubscribersForPeriod(LocalDate startDate, LocalDate endDate);
 }

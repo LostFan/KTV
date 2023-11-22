@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -32,9 +33,9 @@ public class SubscriberInformationView extends FormView {
         public SubscriptionFeeRenderedServicesTableModel(List<RenderedServiceAndPayment> renderedServiceAndPayments) {
             this.renderedServiceAndPayments = renderedServiceAndPayments;
             LocalDate date = LocalDate.now().withDayOfMonth(1);
-            if (this.renderedServiceAndPayments.size() > 0) {
+            if (!this.renderedServiceAndPayments.isEmpty()) {
                 date = this.renderedServiceAndPayments.stream()
-                        .min((o1, o2) -> o1.getDate().compareTo(o2.getDate())).get().getDate();
+                        .min(Comparator.comparing(RenderedServiceAndPayment::getDate)).get().getDate().withDayOfMonth(1);
             }
             while (date.isBefore(LocalDate.now())) {
                 datesList.add(date.withDayOfMonth(1));

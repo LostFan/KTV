@@ -1182,6 +1182,40 @@ public class PostGreSubscriberDAO extends PostgreBaseDao implements SubscriberDA
 
         return list;
     }
+
+    @Override
+    public List<Integer> getInactiveSubscribersForPeriod(LocalDate startDate, LocalDate endDate) {
+        List<Integer> list = new ArrayList<>();
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement(
+                    "SELECT s.account\n" +
+                    "FROM subscriber s\n" +
+                    "WHERE s.account not in (\n" +
+                    "    SELECT rs.subscriber_account \n" +
+                    "    FROM rendered_service rs\n" +
+                    "    WHERE rs.date BETWEEN ? AND ?\n" +
+                    "UNION\n" +
+                    "    SELECT p.subscriber_account \n" +
+                    "    FROM payment p\n" +
+                    "    WHERE p.date BETWEEN ? AND ?\n" +
+                    ")\n");
+            preparedStatement.setDate(1,  Date.valueOf(startDate));
+            preparedStatement.setDate(2,  Date.valueOf(endDate));
+            preparedStatement.setDate(3,  Date.valueOf(startDate));
+            preparedStatement.setDate(4,  Date.valueOf(endDate));
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("account"));
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw new DAOException();
+        }
+
+        return list;
+    }
+
     private Subscriber constructEntity(ResultSet rs) throws SQLException{
         Subscriber subscriber = new Subscriber();
         subscriber.setAccount(rs.getInt("account"));

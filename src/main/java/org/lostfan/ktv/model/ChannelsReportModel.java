@@ -60,7 +60,7 @@ public class ChannelsReportModel  {
     }
 
     public String generateExcelReport(LocalDate date) {
-        SubscriberAndTariffExcel subscriberAndTariffDTOExcel = new SubscriberAndTariffExcel("writeOfReport");
+        SubscriberAndTariffExcel subscriberAndTariffDTOExcel = new SubscriberAndTariffExcel("channelsReport", date);
         subscriberAndTariffDTOExcel.setAllTariffs(tariffDAO.getAll().stream().filter(e -> e.getId() != 0).collect(Collectors.toList()));
         subscriberAndTariffDTOExcel.setSubscriberAndTariffDTOList(getData(date));
 

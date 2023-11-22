@@ -33,9 +33,11 @@ public class SubscriberAndTariffExcel implements ExcelGenerator {
     }
 
     private String fileName;
+    private LocalDate date;
 
-    public SubscriberAndTariffExcel(String fileName) {
+    public SubscriberAndTariffExcel(String fileName, LocalDate date) {
         this.fileName = fileName;
+        this.date = date;
     }
 
     public List<Tariff> getAllTariffs() {
@@ -59,7 +61,7 @@ public class SubscriberAndTariffExcel implements ExcelGenerator {
             Integer CHANNELS_COLUMN = row++;
             //Creating WorkBook
             String fileName = String.format("%s - %s", ResourceBundles.getEntityBundle().getString(
-                    this.fileName), DateFormatter.format(LocalDate.now()));
+                    this.fileName), DateFormatter.format(date));
             File file = new File(fileName + ".xls");
             workbook = Workbook.createWorkbook(file);
             //Creating sheet
@@ -111,6 +113,10 @@ public class SubscriberAndTariffExcel implements ExcelGenerator {
                     row++;
                 }
             }
+
+            sheet.addCell(new Number(ADDRESS_COLUMN, row, subscriberAndTariffDTOList.size()));
+            sheet.addCell(new Label(CHANNELS_COLUMN, row, getGuiString("inTotal")));
+            row++;
 
 
             workbook.write();

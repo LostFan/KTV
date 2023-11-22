@@ -9,6 +9,7 @@ import org.lostfan.ktv.utils.BaseObservable;
 import org.lostfan.ktv.utils.excel.SubscriberDebitExcel;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,35 +39,24 @@ public class WriteOffReportModel extends BaseObservable implements BaseModel {
     public List<SubscriberDebit> getData(LocalDate date) {
 
         List<SubscriberDebit> subscriberDebitsResult = new ArrayList<>();
+        List<Integer> inactiveSubscribersForPeriod = subscriberDAO.getInactiveSubscribersForPeriod(date, LocalDate.now());
         Map<Integer, BigDecimal> endPeriodDebit = renderedServiceDAO.getAllRenderedServicesPriceBeforeDate(LocalDate.now());
         Map<Integer, BigDecimal> endPeriodCredit = paymentDAO.getAllPaymentsPriceBeforeDate(LocalDate.now());
-        List<RenderedService> subscriptionFeesByPeriodDate = renderedServiceDAO.getSubscriptionFeesByPeriodDate(date, LocalDate.now())
-                .stream()
-                .filter(e -> !(BigDecimal.ZERO.compareTo(e.getPrice()) == 0))
-                .collect(Collectors.toList());
-        List<Integer> subscribersWithSubscriptionFeeByPeriod = subscriptionFeesByPeriodDate.stream().mapToInt(e -> e.getSubscriberAccount()).boxed().collect(Collectors.toList());
-        for (Map.Entry<Integer, BigDecimal> integerBigDecimalEntry : endPeriodDebit.entrySet()) {
-            BigDecimal payedSum = endPeriodCredit.get(integerBigDecimalEntry.getKey());
-            if (payedSum == null) {
-                payedSum = BigDecimal.ZERO;
-            }
-            if (integerBigDecimalEntry.getValue().add(payedSum.negate()).compareTo(BigDecimal.ZERO) != 0) {
-                if(!subscribersWithSubscriptionFeeByPeriod.contains(integerBigDecimalEntry.getKey())) {
-                      if (subscriberDAO.getSubscriberSessions(integerBigDecimalEntry.getKey()).size() != 0) {
-
-                          SubscriberDebit subscriberDebit = new SubscriberDebit();
-                          subscriberDebit.setSubscriberAccount(integerBigDecimalEntry.getKey());
-                          subscriberDebit.setDebit(integerBigDecimalEntry.getValue().add(payedSum.negate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-                          subscriberDebit.setSubscriber(subscriberDAO.get(subscriberDebit.getSubscriberAccount()));
-                          if(subscriberDebit.getSubscriber() != null) {
-                              subscriberDebit.setSubscriberStreet(streetDAO.get(subscriberDebit.getSubscriber().getStreetId()));
-                          }
-                          subscriberDebitsResult.add(subscriberDebit);
-                      }
+        inactiveSubscribersForPeriod.forEach(e -> {
+            BigDecimal debit = endPeriodDebit.get(e) != null ? endPeriodDebit.get(e) : BigDecimal.ZERO;
+            BigDecimal credit = endPeriodCredit.get(e) != null ? endPeriodCredit.get(e) : BigDecimal.ZERO;
+            BigDecimal result = debit.add(credit.negate());
+            if (result.compareTo(BigDecimal.ZERO) != 0) {
+                SubscriberDebit subscriberDebit = new SubscriberDebit();
+                subscriberDebit.setSubscriberAccount(e);
+                subscriberDebit.setDebit(result.setScale(2, RoundingMode.HALF_UP));
+                subscriberDebit.setSubscriber(subscriberDAO.get(subscriberDebit.getSubscriberAccount()));
+                if(subscriberDebit.getSubscriber() != null) {
+                    subscriberDebit.setSubscriberStreet(streetDAO.get(subscriberDebit.getSubscriber().getStreetId()));
                 }
+                subscriberDebitsResult.add(subscriberDebit);
             }
-
-        }
+        });
         System.out.println(subscriberDebitsResult.size());
         return subscriberDebitsResult;
     }
